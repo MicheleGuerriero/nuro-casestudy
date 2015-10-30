@@ -1,0 +1,1429 @@
+2015-10-25 17:54:46,143 INFO  o.a.b.l.BrooklynLauncher [main]: Starting Brooklyn web-console with passwordless access on localhost and protected access from any other interfaces (no bind address specified)
+2015-10-25 17:54:49,823 INFO  o.a.b.l.BrooklynWebServer [main]: Started Brooklyn console at http://127.0.0.1:8081/, running classpath://brooklyn.war
+2015-10-25 17:54:49,844 INFO  o.a.b.l.BrooklynLauncher [main]: Persistence disabled
+2015-10-25 17:54:49,844 INFO  o.a.b.l.BrooklynLauncher [main]: High availability disabled
+2015-10-25 17:54:56,191 INFO  org.apache.brooklyn.cli.Main [main]: Launched Brooklyn; will now block until shutdown command received via GUI/API (recommended) or process interrupt.
+2015-10-25 17:55:05,545 INFO  o.a.b.r.s.p.DelegatingSecurityProvider [brooklyn-jetty-server-8081-qtp206071428-21]: REST using security provider org.apache.brooklyn.rest.security.provider.BrooklynUserWithRandomPasswordSecurityProvider
+2015-10-25 17:55:05,545 INFO  o.a.b.r.s.p.BrooklynUserWithRandomPasswordSecurityProvider [brooklyn-jetty-server-8081-qtp206071428-21]: Allowing access to web console from localhost or with brooklyn:RgWoke3Osi
+2015-10-25 17:55:07,178 INFO  o.a.b.c.l.g.UtraceHostGeoLookup [Thread-14]: Geo info lookup for 127.0.0.1/127.0.0.1 returned: HostGeoInfo[Fastweb (IT): 127.0.0.1 at (42.833301544189,12.833299636841)]
+2015-10-25 18:09:56,754 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp206071428-21]: Launched from YAML: name: Nuro case study on the Cloud byon
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.19.131.205
+    - 52.30.0.177
+services:
+
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Httpd + PHP
+  id: nuroPHP
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    sudo apt-get update
+    sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+    wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+    sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+    sudo chmod -R 777 /var/www/html/nuro-casestudy
+    cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+    sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+    sudo service apache2 restart
+
+  checkRunning.command: |
+    sudo service apache2 status
+
+  stop.command: |
+    sudo service apache2 stop
+
+  env:
+    USER: seaclouds
+    PASSWORD: preview
+    VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+    HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+    DB_NAME: "database1"
+    DB_USER: "brooklyn"
+    DB_PASSWORD: "br00k11n"
+
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  id: db
+  name: Nuro DB
+  brooklyn.config:
+    datastore.creation.script.url: ./create.sql -> BasicApplicationImpl{id=xFtapEf3} (Task[start:v0AaZpju])
+2015-10-25 18:09:56,828 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-5]: Starting MySqlNodeImpl{id=TtbazOum}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=u9DBYpYN, name=FixedListMachineProvisioningLocation:u9DB} with ports [22, 3306]
+2015-10-25 18:09:56,831 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-11]: Starting VanillaSoftwareProcessImpl{id=Sx9ZBKUE}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=u9DBYpYN, name=FixedListMachineProvisioningLocation:u9DB} with ports [22]
+2015-10-25 18:09:56,843 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-9]: Starting MySqlNodeImpl{id=TtbazOum} on machine SshMachineLocation[SshMachineLocation:NK24:52.19.131.205/52.19.131.205:22@NK24iHdM]
+2015-10-25 18:09:56,843 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-12]: Starting VanillaSoftwareProcessImpl{id=Sx9ZBKUE} on machine SshMachineLocation[SshMachineLocation:m3Yq:52.30.0.177/52.30.0.177:22@m3YqqvRj]
+2015-10-25 18:11:32,396 INFO  o.a.b.c.e.AbstractApplication [brooklyn-execmanager-wRVEjrY5-3]: Started application BasicApplicationImpl{id=xFtapEf3}
+2015-10-25 18:58:17,122 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-wRVEjrY5-128]: Setting VanillaSoftwareProcessImpl{id=Sx9ZBKUE} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-25 18:58:23,419 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-wRVEjrY5-149]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=Sx9ZBKUE}: java.lang.InterruptedException (throwing)
+2015-10-25 18:58:23,419 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-wRVEjrY5-149]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=Sx9ZBKUE}:myNA8WuU]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/xFtapEf3/entities/VanillaSoftwareProcess_Sx9ZBKUE"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 11:54:42,547 INFO  o.a.b.l.BrooklynLauncher [main]: Starting Brooklyn web-console with passwordless access on localhost and protected access from any other interfaces (no bind address specified)
+2015-10-26 11:54:44,430 INFO  o.a.b.l.BrooklynWebServer [main]: Started Brooklyn console at http://127.0.0.1:8083/, running classpath://brooklyn.war
+2015-10-26 11:54:44,442 INFO  o.a.b.l.BrooklynLauncher [main]: Persistence disabled
+2015-10-26 11:54:44,443 INFO  o.a.b.l.BrooklynLauncher [main]: High availability disabled
+2015-10-26 11:54:48,893 INFO  org.apache.brooklyn.cli.Main [main]: Launched Brooklyn; will now block until shutdown command received via GUI/API (recommended) or process interrupt.
+2015-10-26 11:58:02,414 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp206071428-23]: Launched from YAML: name: Nuro case study on the Cloud byon
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.31.28.106
+    - 52.31.20.32
+services:
+
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Httpd + PHP
+  id: nuroPHP
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    sudo apt-get update
+    sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+    wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+    sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+    sudo chmod -R 777 /var/www/html/nuro-casestudy
+    cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+    sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+    sudo service apache2 restart
+
+  checkRunning.command: |
+    sudo service apache2 status
+
+  stop.command: |
+    sudo service apache2 stop
+
+  env:
+    USER: seaclouds
+    PASSWORD: preview
+    VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+    HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+    DB_NAME: "database1"
+    DB_USER: "brooklyn"
+    DB_PASSWORD: "br00k11n"
+
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  id: db
+  name: Nuro DB
+  brooklyn.config:
+    datastore.creation.script.url: ./create.sql -> BasicApplicationImpl{id=cYh1Iodn} (Task[start:CpxpJd7n])
+2015-10-26 11:58:02,444 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-190]: Starting MySqlNodeImpl{id=AtD4NqfZ}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=PE4KFD2J, name=FixedListMachineProvisioningLocation:PE4K} with ports [22, 3306]
+2015-10-26 11:58:02,449 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-191]: Starting VanillaSoftwareProcessImpl{id=ZsK4cTpQ}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=PE4KFD2J, name=FixedListMachineProvisioningLocation:PE4K} with ports [22]
+2015-10-26 11:58:02,456 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-196]: Starting MySqlNodeImpl{id=AtD4NqfZ} on machine SshMachineLocation[SshMachineLocation:lF9k:52.31.28.106/52.31.28.106:22@lF9ksHmv]
+2015-10-26 11:58:02,456 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-wRVEjrY5-195]: Starting VanillaSoftwareProcessImpl{id=ZsK4cTpQ} on machine SshMachineLocation[SshMachineLocation:uc7S:52.31.20.32/52.31.20.32:22@uc7SUEcL]
+2015-10-26 11:59:24,612 INFO  o.a.b.c.e.AbstractApplication [brooklyn-execmanager-wRVEjrY5-183]: Started application BasicApplicationImpl{id=cYh1Iodn}
+2015-10-26 14:14:03,901 INFO  o.a.b.l.BrooklynLauncher [main]: Starting Brooklyn web-console with passwordless access on localhost and protected access from any other interfaces (no bind address specified)
+2015-10-26 14:14:11,836 INFO  o.a.b.l.BrooklynWebServer [main]: Started Brooklyn console at http://127.0.0.1:8081/, running classpath://brooklyn.war
+2015-10-26 14:14:11,888 INFO  o.a.b.l.BrooklynLauncher [main]: Persistence disabled
+2015-10-26 14:14:11,889 INFO  o.a.b.l.BrooklynLauncher [main]: High availability disabled
+2015-10-26 14:14:27,884 INFO  org.apache.brooklyn.cli.Main [main]: Launched Brooklyn; will now block until shutdown command received via GUI/API (recommended) or process interrupt.
+2015-10-26 14:16:53,273 INFO  o.a.b.r.s.p.DelegatingSecurityProvider [brooklyn-jetty-server-8081-qtp337719746-24]: REST using security provider org.apache.brooklyn.rest.security.provider.BrooklynUserWithRandomPasswordSecurityProvider
+2015-10-26 14:16:53,274 INFO  o.a.b.r.s.p.BrooklynUserWithRandomPasswordSecurityProvider [brooklyn-jetty-server-8081-qtp337719746-24]: Allowing access to web console from localhost or with brooklyn:SpCvaLAGjm
+2015-10-26 14:16:54,852 INFO  o.a.b.c.l.g.UtraceHostGeoLookup [Thread-14]: Geo info lookup for 127.0.0.1/127.0.0.1 returned: HostGeoInfo[Consorzio di Calcolo Interuniversitario CILEA (IT): 127.0.0.1 at (42.833301544189,12.833299636841)]
+2015-10-26 14:17:34,891 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp337719746-21]: Launched from YAML: name: Nuro case study on the Cloud byon
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.31.4.23
+    - 52.31.24.117
+services:
+
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Httpd + PHP
+  id: nuroPHP
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    sudo apt-get update
+    sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+    wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+    sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+    sudo chmod -R 777 /var/www/html/nuro-casestudy
+    cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+    sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+    sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+    sudo service apache2 restart
+
+  checkRunning.command: |
+    sudo service apache2 status
+
+  stop.command: |
+    sudo service apache2 stop
+
+  env:
+    USER: seaclouds
+    PASSWORD: preview
+    VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+    HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+    DB_NAME: "database1"
+    DB_USER: "brooklyn"
+    DB_PASSWORD: "br00k11n"
+
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  id: db
+  name: Nuro DB
+  brooklyn.config:
+    datastore.creation.script.url: ./create.sql -> BasicApplicationImpl{id=tRRvdjK4} (Task[start:OPuU9qnz])
+2015-10-26 14:17:34,984 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-kIThTilr-0]: Starting VanillaSoftwareProcessImpl{id=kUFHYwVf}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=dKe4fjyA, name=FixedListMachineProvisioningLocation:dKe4} with ports [22]
+2015-10-26 14:17:34,984 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-kIThTilr-10]: Starting MySqlNodeImpl{id=APDzcece}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=dKe4fjyA, name=FixedListMachineProvisioningLocation:dKe4} with ports [22, 3306]
+2015-10-26 14:17:34,991 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-kIThTilr-12]: Starting MySqlNodeImpl{id=APDzcece} on machine SshMachineLocation[SshMachineLocation:VNjd:52.31.4.23/52.31.4.23:22@VNjdTcvx]
+2015-10-26 14:17:34,992 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-kIThTilr-14]: Starting VanillaSoftwareProcessImpl{id=kUFHYwVf} on machine SshMachineLocation[SshMachineLocation:NeOD:52.31.24.117/52.31.24.117:22@NeODYBI4]
+2015-10-26 14:19:13,299 INFO  o.a.b.c.e.AbstractApplication [brooklyn-execmanager-kIThTilr-5]: Started application BasicApplicationImpl{id=tRRvdjK4}
+2015-10-26 15:03:08,991 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-63]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150243964-N7Nh-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) ssh not connected! (throwing)
+2015-10-26 15:03:08,991 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-63]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:SmdTdX50]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:03:08,994 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-68]: Read of VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150243964-N7Nh-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) ssh not connected!: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150243964-N7Nh-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) ssh not connected!: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150243964-N7Nh-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) ssh not connected!
+2015-10-26 15:03:08,999 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-77]: Setting VanillaSoftwareProcessImpl{id=kUFHYwVf} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-26 15:03:09,000 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-78]: Setting BasicApplicationImpl{id=tRRvdjK4} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=kUFHYwVf}}
+2015-10-26 15:03:15,203 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-18]: Success (following previous problem) reading VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean)
+2015-10-26 15:05:44,055 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-70]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150519028-k8m7-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: Socket closed (throwing)
+2015-10-26 15:05:44,056 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-70]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:Wkdv39iW]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:05:44,058 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-74]: Read of VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150519028-k8m7-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: Socket closed: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150519028-k8m7-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: Socket closed: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-150519028-k8m7-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 25.0s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 25.0s/2m); out of retries: Socket closed
+2015-10-26 15:05:44,061 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-79]: Setting VanillaSoftwareProcessImpl{id=kUFHYwVf} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-26 15:05:44,062 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-79]: Setting BasicApplicationImpl{id=tRRvdjK4} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=kUFHYwVf}}
+2015-10-26 15:05:50,365 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-70]: Success (following previous problem) reading VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean)
+2015-10-26 15:07:52,795 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-36]: Read of MySqlNodeImpl{id=APDzcece}->Sensor: mysql.queries.perSec.fromMysql (java.lang.Double) gave failure: org.apache.brooklyn.feed.ssh.SshPollValue@48b2930b
+2015-10-26 15:07:58,458 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-59]: Success (following previous problem) reading MySqlNodeImpl{id=APDzcece}->Sensor: mysql.queries.perSec.fromMysql (java.lang.Double)
+2015-10-26 15:40:27,826 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-125]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-153957644-xVHJ-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 30.2s/2m); out of retries: Timeout expired (throwing)
+2015-10-26 15:40:27,826 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-125]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:j8J11ODS]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:40:27,828 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-91]: Read of VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-153957644-xVHJ-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 30.2s/2m); out of retries: Timeout expired: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-153957644-xVHJ-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 30.2s/2m); out of retries: Timeout expired: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-153957644-xVHJ-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 30.2s/2m); out of retries: Timeout expired
+2015-10-26 15:40:27,830 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-94]: Setting VanillaSoftwareProcessImpl{id=kUFHYwVf} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-26 15:40:27,831 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-94]: Setting BasicApplicationImpl{id=tRRvdjK4} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=kUFHYwVf}}
+2015-10-26 15:40:41,231 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-91]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=702507251, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 8.40s/2m); out of retries: No route to host (throwing)
+2015-10-26 15:40:41,232 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-91]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:wnP84grr]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:40:47,231 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-91]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1909098735, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 992ms/2m); out of retries: No route to host (throwing)
+2015-10-26 15:40:47,231 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-91]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:Vkm1WskD]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:40:53,231 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-94]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=407252606, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 992ms/2m); out of retries: No route to host (throwing)
+2015-10-26 15:40:53,231 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-94]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:y34SkoiA]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:40:59,231 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-125]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1415426045, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 995ms/2m); out of retries: No route to host (throwing)
+2015-10-26 15:40:59,231 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-125]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:QSheBYP7]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:41:05,231 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-59]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1479855247, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 994ms/2m); out of retries: No route to host (throwing)
+2015-10-26 15:41:05,231 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-59]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:g9f7mQMI]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:41:08,231 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-119]: Read of MySqlNodeImpl{id=APDzcece}->Sensor: mysql.queries.perSec.fromMysql (java.lang.Double) gave exception: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.4.23:22) failed to connect: (ubuntu@52.31.4.23:22) (ubuntu@52.31.4.23:22) error acquiring {hostAndPort=52.31.4.23:22, user=ubuntu, ssh=841080781, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=0, sessionTimeout=0} (attempt 4/4, in time 10.33s/2m); out of retries: No route to host
+2015-10-26 15:41:08,231 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-120]: Read of MySqlNodeImpl{id=APDzcece}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.4.23:22) failed to connect: (ubuntu@52.31.4.23:22) (ubuntu@52.31.4.23:22) error acquiring {hostAndPort=52.31.4.23:22, user=ubuntu, ssh=956815531, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=0, sessionTimeout=0} (attempt 4/4, in time 10.32s/2m); out of retries: No route to host
+2015-10-26 15:41:08,234 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-4]: Setting MySqlNodeImpl{id=APDzcece} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-26 15:41:11,230 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-122]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=216356018, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 990ms/2m); out of retries: No route to host (throwing)
+2015-10-26 15:41:11,231 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-122]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:VFGxYZF4]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:41:17,231 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-120]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1386500278, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 994ms/2m); out of retries: No route to host (throwing)
+2015-10-26 15:41:17,231 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-120]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:BYIu79Ek]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 15:41:23,572 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-115]: Success (following previous problem) reading VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean)
+2015-10-26 15:41:24,407 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-125]: Success (following previous problem) reading MySqlNodeImpl{id=APDzcece}->Sensor: service.process.isRunning (java.lang.Boolean)
+2015-10-26 15:41:24,407 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-129]: Success (following previous problem) reading MySqlNodeImpl{id=APDzcece}->Sensor: mysql.queries.perSec.fromMysql (java.lang.Double)
+2015-10-26 17:51:02,645 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-207]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-175013305-T2KR-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 49.3s/2m); out of retries: Read timed out (throwing)
+2015-10-26 17:51:02,645 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-207]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:Ea4V8Kxy]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 17:51:02,649 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-148]: Read of VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-175013305-T2KR-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 49.3s/2m); out of retries: Read timed out: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-175013305-T2KR-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 49.3s/2m); out of retries: Read timed out: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151026-175013305-T2KR-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 49.3s/2m); out of retries: Read timed out
+2015-10-26 17:51:02,654 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-191]: Setting VanillaSoftwareProcessImpl{id=kUFHYwVf} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-26 17:51:02,656 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-207]: Setting BasicApplicationImpl{id=tRRvdjK4} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=kUFHYwVf}}
+2015-10-26 17:52:01,128 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-214]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=2011056202, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 53.5s/2m); out of retries: Timeout expired (throwing)
+2015-10-26 17:52:01,128 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-214]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:DLz9uze5]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-26 17:52:06,137 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-208]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1850493034, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 0ms/2m); out of retries: Network is unreachable (throwing)
+2015-10-26 17:52:06,137 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-208]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:QuHkEZYP]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 08:44:18,737 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-208]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=353011106, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 0ms/2m); out of retries: Network is unreachable (throwing)
+2015-10-27 08:44:18,737 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-208]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:PxzPYGy0]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 08:44:23,743 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-148]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1634231996, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 0ms/2m); out of retries: Network is unreachable (throwing)
+2015-10-27 08:44:23,743 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-148]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:kCsA4eyv]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 08:44:38,758 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-226]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=2114515602, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out (throwing)
+2015-10-27 08:44:38,758 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-226]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:XP9BTREa]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 08:44:53,774 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-215]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=2038670421, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out (throwing)
+2015-10-27 08:44:53,774 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-215]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:SBlbaBJY]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 08:45:08,791 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-226]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1408304414, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out (throwing)
+2015-10-27 08:45:08,791 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-226]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:TU7q8va3]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 08:45:14,204 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-237]: Success (following previous problem) reading VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean)
+2015-10-27 08:47:10,031 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-207]: Read of MySqlNodeImpl{id=APDzcece}->Sensor: mysql.queries.perSec.fromMysql (java.lang.Double) gave exception: org.apache.brooklyn.util.exceptions.RuntimeTimeoutException: (ubuntu@52.31.4.23:22) error acquiring Put(path=[/tmp/brooklyn-20151026-175157013-fCBi-ssh-feed.sh 249]) (attempt 1/4, in time 3m 7s/2m); out of time
+2015-10-27 08:47:17,720 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-241]: Success (following previous problem) reading MySqlNodeImpl{id=APDzcece}->Sensor: mysql.queries.perSec.fromMysql (java.lang.Double)
+2015-10-27 09:00:14,287 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-221]: Read of MySqlNodeImpl{id=APDzcece}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.RuntimeTimeoutException: (ubuntu@52.31.4.23:22) error acquiring Put(path=[/tmp/brooklyn-20151026-175142265-ot2u-ssh-feed.sh 249]) (attempt 1/4, in time 16m 26s/2m); out of time
+2015-10-27 09:00:14,289 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-192]: Setting MySqlNodeImpl{id=APDzcece} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-27 09:00:14,289 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-246]: Setting BasicApplicationImpl{id=tRRvdjK4} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: MySqlNodeImpl{id=APDzcece}}
+2015-10-27 09:00:19,717 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-207]: Success (following previous problem) reading MySqlNodeImpl{id=APDzcece}->Sensor: service.process.isRunning (java.lang.Boolean)
+2015-10-27 10:07:45,625 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-255]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151027-100723347-yReb-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 22.3s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 22.3s/2m); out of retries: Socket closed (throwing)
+2015-10-27 10:07:45,625 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-255]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:do9G2agn]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 10:07:45,627 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-246]: Read of VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151027-100723347-yReb-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 22.3s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 22.3s/2m); out of retries: Socket closed: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151027-100723347-yReb-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 22.3s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 22.3s/2m); out of retries: Socket closed: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring Put(path=[/tmp/brooklyn-20151027-100723347-yReb-check-running_VanillaSoftwareP.sh 556]) (attempt 1/1, in time 22.3s/2m); out of retries: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring SFTPClient() (attempt 1/1, in time 22.3s/2m); out of retries: Socket closed
+2015-10-27 10:07:45,629 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-258]: Setting VanillaSoftwareProcessImpl{id=kUFHYwVf} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-27 10:07:45,630 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-267]: Setting BasicApplicationImpl{id=tRRvdjK4} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=kUFHYwVf}}
+2015-10-27 10:07:54,028 INFO  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-246]: Success (following previous problem) reading VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean)
+2015-10-27 10:38:41,542 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-295]: Read of MySqlNodeImpl{id=APDzcece}->Sensor: mysql.queries.perSec.fromMysql (java.lang.Double) gave exception: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.4.23:22) failed to connect: (ubuntu@52.31.4.23:22) (ubuntu@52.31.4.23:22) error acquiring {hostAndPort=52.31.4.23:22, user=ubuntu, ssh=988734653, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=0, sessionTimeout=0} (attempt 4/4, in time 910ms/2m); out of retries: Connection refused
+2015-10-27 10:38:41,558 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-296]: Read of MySqlNodeImpl{id=APDzcece}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.4.23:22) failed to connect: (ubuntu@52.31.4.23:22) (ubuntu@52.31.4.23:22) error acquiring {hostAndPort=52.31.4.23:22, user=ubuntu, ssh=434852485, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=0, sessionTimeout=0} (attempt 4/4, in time 892ms/2m); out of retries: Connection refused
+2015-10-27 10:38:41,560 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-280]: Setting MySqlNodeImpl{id=APDzcece} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-27 10:38:41,560 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-296]: Setting BasicApplicationImpl{id=tRRvdjK4} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: MySqlNodeImpl{id=APDzcece}}
+2015-10-27 10:38:54,656 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-289]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=633447964, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out (throwing)
+2015-10-27 10:38:54,656 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-289]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:dMwF1Wt0]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 10:38:54,658 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-kIThTilr-280]: Read of VanillaSoftwareProcessImpl{id=kUFHYwVf}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=633447964, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=633447964, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=633447964, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out
+2015-10-27 10:38:54,661 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-kIThTilr-296]: Setting VanillaSoftwareProcessImpl{id=kUFHYwVf} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-27 10:39:09,674 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-280]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: (ubuntu@52.31.24.117:22) failed to connect: (ubuntu@52.31.24.117:22) (ubuntu@52.31.24.117:22) error acquiring {hostAndPort=52.31.24.117:22, user=ubuntu, ssh=1229254170, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out (throwing)
+2015-10-27 10:39:09,675 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-280]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:WZTgezgn]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 10:39:14,696 WARN  o.a.b.u.c.t.BasicExecutionManager [brooklyn-execmanager-kIThTilr-308]: Deleting submitted task before completion: Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:sCmFVZtD]; this task will continue to run in the background outwith org.apache.brooklyn.util.core.task.BasicExecutionManager@222f1524, but perhaps it should have been cancelled?
+2015-10-27 10:39:24,688 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-296]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}: java.lang.InterruptedException (throwing)
+2015-10-27 10:39:24,688 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-kIThTilr-296]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=kUFHYwVf}:sCmFVZtD]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tRRvdjK4/entities/VanillaSoftwareProcess_kUFHYwVf"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo service apache2 status
+
+2015-10-27 13:53:43,574 INFO  o.a.b.l.BrooklynLauncher [main]: Starting Brooklyn web-console with passwordless access on localhost and protected access from any other interfaces (no bind address specified)
+2015-10-27 13:53:45,270 INFO  o.a.b.l.BrooklynWebServer [main]: Started Brooklyn console at http://127.0.0.1:8081/, running classpath://brooklyn.war
+2015-10-27 13:53:45,284 INFO  o.a.b.l.BrooklynLauncher [main]: Persistence disabled
+2015-10-27 13:53:45,284 INFO  o.a.b.l.BrooklynLauncher [main]: High availability disabled
+2015-10-27 13:53:49,127 INFO  org.apache.brooklyn.cli.Main [main]: Launched Brooklyn; will now block until shutdown command received via GUI/API (recommended) or process interrupt.
+2015-10-27 13:53:58,359 INFO  o.a.b.r.s.p.DelegatingSecurityProvider [brooklyn-jetty-server-8081-qtp1618951259-23]: REST using security provider org.apache.brooklyn.rest.security.provider.BrooklynUserWithRandomPasswordSecurityProvider
+2015-10-27 13:53:58,359 INFO  o.a.b.r.s.p.BrooklynUserWithRandomPasswordSecurityProvider [brooklyn-jetty-server-8081-qtp1618951259-23]: Allowing access to web console from localhost or with brooklyn:Mbxf0qDy2C
+2015-10-27 13:53:59,814 INFO  o.a.b.c.l.g.UtraceHostGeoLookup [Thread-14]: Geo info lookup for 127.0.0.1/127.0.0.1 returned: HostGeoInfo[Consorzio di Calcolo Interuniversitario CILEA (IT): 127.0.0.1 at (42.833301544189,12.833299636841)]
+2015-10-27 14:13:13,584 INFO  o.a.b.l.BrooklynLauncher [main]: Starting Brooklyn web-console with passwordless access on localhost and protected access from any other interfaces (no bind address specified)
+2015-10-27 14:13:15,410 INFO  o.a.b.l.BrooklynWebServer [main]: Started Brooklyn console at http://127.0.0.1:8081/, running classpath://brooklyn.war
+2015-10-27 14:13:15,421 INFO  o.a.b.l.BrooklynLauncher [main]: Persistence disabled
+2015-10-27 14:13:15,422 INFO  o.a.b.l.BrooklynLauncher [main]: High availability disabled
+2015-10-27 14:13:19,459 INFO  org.apache.brooklyn.cli.Main [main]: Launched Brooklyn; will now block until shutdown command received via GUI/API (recommended) or process interrupt.
+2015-10-27 14:13:20,100 INFO  o.a.b.r.s.p.DelegatingSecurityProvider [brooklyn-jetty-server-8081-qtp50822274-22]: REST using security provider org.apache.brooklyn.rest.security.provider.BrooklynUserWithRandomPasswordSecurityProvider
+2015-10-27 14:13:20,100 INFO  o.a.b.r.s.p.BrooklynUserWithRandomPasswordSecurityProvider [brooklyn-jetty-server-8081-qtp50822274-22]: Allowing access to web console from localhost or with brooklyn:FY21CDldsy
+2015-10-27 14:13:21,329 INFO  o.a.b.c.l.g.UtraceHostGeoLookup [Thread-14]: Geo info lookup for 127.0.0.1/127.0.0.1 returned: HostGeoInfo[Consorzio di Calcolo Interuniversitario CILEA (IT): 127.0.0.1 at (42.833301544189,12.833299636841)]
+2015-10-27 14:13:28,812 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp50822274-23]: Launched from YAML: name: Nuro case study on the Cloud byon
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ./seaclouds.pem
+    region: eu-west-1
+    hosts:
+    - 52.17.29.26
+    - 52.30.232.56
+services:
+- serviceType: brooklyn.entity.basic.SameServerEntity
+  name: PHP + DC
+  brooklyn.children:
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: PHP
+    id: php
+    provisioning.properties:
+      stopIptables: true
+
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+      wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+      sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+      sudo chmod -R 777 /var/www/html/nuro-casestudy
+      cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+      sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+      sudo service apache2 restart
+
+    checkRunning.command: |
+      sudo service apache2 status
+
+    stop.command: |
+      sudo service apache2 stop
+
+    env:
+      USER: seaclouds
+      PASSWORD: preview
+      VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+      HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+      DB_NAME: "database1"
+      DB_USER: "brooklyn"
+      DB_PASSWORD: "br00k11n"
+
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: DC
+    id: nuro-dc
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get install -y openjdk-7-jre
+      wget -O nuro-data-collector.jar https://www.dropbox.com/s/db6o4f4k5cgv16y/nuro-data-collector-0.8.0-SNAPSHOT-jar-with-dependencies.jar
+      wget -O config.properties https://www.dropbox.com/s/pp22gk2g8o5gzte/config.properties
+      nohup java -jar nuro-data-collector.jar ./config.properties > nuroDc.log 2>&1 &
+
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  name: Nuro DB
+  id: nuro-db
+  brooklyn.config:
+    datastore.creation.script.url: http://seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/create_db_and_tables-20150921_1543.sql -> BasicApplicationImpl{id=CHYjBxMO} (Task[start:U6uTaYeV])
+2015-10-27 14:13:28,880 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FrSZigMv-8]: Starting MySqlNodeImpl{id=FPoCHquc}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=TPV1OLgD, name=FixedListMachineProvisioningLocation:TPV1} with ports [22, 3306]
+2015-10-27 14:13:28,889 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FrSZigMv-12]: Starting MySqlNodeImpl{id=FPoCHquc} on machine SshMachineLocation[SshMachineLocation:yivL:52.17.29.26/52.17.29.26:22@yivLP7Np]
+2015-10-27 14:13:28,900 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FrSZigMv-13]: Starting SameServerEntityImpl{id=hoJrDkuk}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=TPV1OLgD, name=FixedListMachineProvisioningLocation:TPV1} with ports [22]
+2015-10-27 14:13:28,912 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FrSZigMv-14]: Starting SameServerEntityImpl{id=hoJrDkuk} on machine SshMachineLocation[SshMachineLocation:Cbtp:52.30.232.56/52.30.232.56:22@Cbtpkkbf]
+2015-10-27 14:13:31,413 WARN  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FrSZigMv-14]: Could not resolve on-box directory for SameServerEntityImpl{id=hoJrDkuk} at SshMachineLocation[SshMachineLocation:Cbtp:52.30.232.56/52.30.232.56:22@Cbtpkkbf]; using /home/micheleguerriero/brooklyn-managed-processes, though this may not be accurate at the target (and may fail shortly)
+2015-10-27 14:13:31,413 WARN  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FrSZigMv-12]: Could not resolve on-box directory for MySqlNodeImpl{id=FPoCHquc} at SshMachineLocation[SshMachineLocation:yivL:52.17.29.26/52.17.29.26:22@yivLP7Np]; using /home/micheleguerriero/brooklyn-managed-processes, though this may not be accurate at the target (and may fail shortly)
+2015-10-27 14:13:31,424 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FrSZigMv-3]: Error invoking start at SameServerEntityImpl{id=hoJrDkuk}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Cannot establish ssh connection to ubuntu @ SshMachineLocation[SshMachineLocation:Cbtp:52.30.232.56/52.30.232.56:22@Cbtpkkbf] (/home/micheleguerriero/Scrivania/SeaClouds/NURO_DC_WD/nuro-casestudy/./seaclouds.pem (No such file or directory)). 
+Ensure that passwordless and passphraseless ssh access is enabled using standard keys from ~/.ssh or as configured in brooklyn.properties. Check that the target host is accessible, that credentials are correct (location and permissions if using a key), that the SFTP subsystem is available on the remote side, and that there is sufficient random noise in /dev/random on both ends. To debug less common causes, see the original error in the trace or log, and/or enable 'net.schmizz' (sshj) logging.: Cannot establish ssh connection to ubuntu @ SshMachineLocation[SshMachineLocation:Cbtp:52.30.232.56/52.30.232.56:22@Cbtpkkbf] (/home/micheleguerriero/Scrivania/SeaClouds/NURO_DC_WD/nuro-casestudy/./seaclouds.pem (No such file or directory)). 
+Ensure that passwordless and passphraseless ssh access is enabled using standard keys from ~/.ssh or as configured in brooklyn.properties. Check that the target host is accessible, that credentials are correct (location and permissions if using a key), that the SFTP subsystem is available on the remote side, and that there is sufficient random noise in /dev/random on both ends. To debug less common causes, see the original error in the trace or log, and/or enable 'net.schmizz' (sshj) logging.: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.30.232.56:22) failed to connect: (ubuntu@52.30.232.56:22) (ubuntu@52.30.232.56:22) error acquiring {hostAndPort=52.30.232.56:22, user=ubuntu, ssh=1202085672, password=null, privateKeyFile=./seaclouds.pem, privateKey=null, connectTimeout=0, sessionTimeout=0} (attempt 4/4, in time 2.46s/2m); out of retries: Exhausted available authentication methods
+2015-10-27 14:13:31,497 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FrSZigMv-7]: Error invoking start at MySqlNodeImpl{id=FPoCHquc}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Cannot establish ssh connection to ubuntu @ SshMachineLocation[SshMachineLocation:yivL:52.17.29.26/52.17.29.26:22@yivLP7Np] (/home/micheleguerriero/Scrivania/SeaClouds/NURO_DC_WD/nuro-casestudy/./seaclouds.pem (No such file or directory)). 
+Ensure that passwordless and passphraseless ssh access is enabled using standard keys from ~/.ssh or as configured in brooklyn.properties. Check that the target host is accessible, that credentials are correct (location and permissions if using a key), that the SFTP subsystem is available on the remote side, and that there is sufficient random noise in /dev/random on both ends. To debug less common causes, see the original error in the trace or log, and/or enable 'net.schmizz' (sshj) logging.: Cannot establish ssh connection to ubuntu @ SshMachineLocation[SshMachineLocation:yivL:52.17.29.26/52.17.29.26:22@yivLP7Np] (/home/micheleguerriero/Scrivania/SeaClouds/NURO_DC_WD/nuro-casestudy/./seaclouds.pem (No such file or directory)). 
+Ensure that passwordless and passphraseless ssh access is enabled using standard keys from ~/.ssh or as configured in brooklyn.properties. Check that the target host is accessible, that credentials are correct (location and permissions if using a key), that the SFTP subsystem is available on the remote side, and that there is sufficient random noise in /dev/random on both ends. To debug less common causes, see the original error in the trace or log, and/or enable 'net.schmizz' (sshj) logging.: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.17.29.26:22) failed to connect: (ubuntu@52.17.29.26:22) (ubuntu@52.17.29.26:22) error acquiring {hostAndPort=52.17.29.26:22, user=ubuntu, ssh=973822898, password=null, privateKeyFile=./seaclouds.pem, privateKey=null, connectTimeout=0, sessionTimeout=0} (attempt 4/4, in time 2.46s/2m); out of retries: Exhausted available authentication methods
+2015-10-27 14:13:31,503 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FrSZigMv-4]: Setting BasicApplicationImpl{id=CHYjBxMO} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entities not healthy: SameServerEntityImpl{id=hoJrDkuk}, MySqlNodeImpl{id=FPoCHquc}}
+2015-10-27 14:13:31,504 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FrSZigMv-4]: Error invoking start at BasicApplicationImpl{id=CHYjBxMO}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.CompoundRuntimeException: 2 of 2 parallel child tasks failed, 2 errors including: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: Error invoking start at SameServerEntityImpl{id=hoJrDkuk}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Cannot establish ssh connection to ubuntu @ SshMachineLocation[SshMachineLocation:Cbtp:52.30.232.56/52.30.232.56:22@Cbtpkkbf] (/home/micheleguerriero/Scrivania/SeaClouds/NURO_DC_WD/nuro-casestudy/./seaclouds.pem (No such file or directory)). 
+Ensure that passwordless and passphraseless ssh access is enabled using standard keys from ~/.ssh or as configured in brooklyn.properties. Check that the target host is accessible, that credentials are correct (location and permissions if using a key), that the SFTP subsystem is available on the remote side, and that there is sufficient random noise in /dev/random on both ends. To debug less common causes, see the original error in the trace or log, and/or enable 'net.schmizz' (sshj) logging.: Cannot establish ssh connection to ubuntu @ SshMachineLocation[SshMachineLocation:Cbtp:52.30.232.56/52.30.232.56:22@Cbtpkkbf] (/home/micheleguerriero/Scrivania/SeaClouds/NURO_DC_WD/nuro-casestudy/./seaclouds.pem (No such file or directory)). 
+Ensure that passwordless and passphraseless ssh access is enabled using standard keys from ~/.ssh or as configured in brooklyn.properties. Check that the target host is accessible, that credentials are correct (location and permissions if using a key), that the SFTP subsystem is available on the remote side, and that there is sufficient random noise in /dev/random on both ends. To debug less common causes, see the original error in the trace or log, and/or enable 'net.schmizz' (sshj) logging.: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.30.232.56:22) failed to connect: (ubuntu@52.30.232.56:22) (ubuntu@52.30.232.56:22) error acquiring {hostAndPort=52.30.232.56:22, user=ubuntu, ssh=1202085672, password=null, privateKeyFile=./seaclouds.pem, privateKey=null, connectTimeout=0, sessionTimeout=0} (attempt 4/4, in time 2.46s/2m); out of retries: Exhausted available authentication methods
+2015-10-29 10:32:15,497 INFO  o.a.b.l.BrooklynLauncher [main]: Starting Brooklyn web-console with passwordless access on localhost and protected access from any other interfaces (no bind address specified)
+2015-10-29 10:32:18,206 INFO  o.a.b.l.BrooklynWebServer [main]: Started Brooklyn console at http://127.0.0.1:8081/, running classpath://brooklyn.war
+2015-10-29 10:32:18,225 INFO  o.a.b.l.BrooklynLauncher [main]: Persistence disabled
+2015-10-29 10:32:18,225 INFO  o.a.b.l.BrooklynLauncher [main]: High availability disabled
+2015-10-29 10:32:22,905 INFO  org.apache.brooklyn.cli.Main [main]: Launched Brooklyn; will now block until shutdown command received via GUI/API (recommended) or process interrupt.
+2015-10-29 10:38:00,244 INFO  o.a.b.r.s.p.DelegatingSecurityProvider [brooklyn-jetty-server-8081-qtp861381278-25]: REST using security provider org.apache.brooklyn.rest.security.provider.BrooklynUserWithRandomPasswordSecurityProvider
+2015-10-29 10:38:00,245 INFO  o.a.b.r.s.p.BrooklynUserWithRandomPasswordSecurityProvider [brooklyn-jetty-server-8081-qtp861381278-25]: Allowing access to web console from localhost or with brooklyn:XFu40rREam
+2015-10-29 10:38:03,716 INFO  o.a.b.c.l.g.UtraceHostGeoLookup [Thread-14]: Geo info lookup unavailable (for 127.0.0.1/127.0.0.1; cause org.apache.brooklyn.util.exceptions.RuntimeInterruptedException: java.lang.InterruptedException)
+2015-10-29 10:40:50,150 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp861381278-24]: Launched from YAML: name: dc
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.30.120.236
+
+services:
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Data collector
+  id: data collector
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+    export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+    export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+    export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+    export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+    wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+    wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+    unzip hyperic-sigar-1.6.4.zip
+    nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+    echo $! > $PID_FILE -> BasicApplicationImpl{id=G1sqfZBk} (Task[start:zVsFWog1])
+2015-10-29 10:40:50,216 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-6]: Starting VanillaSoftwareProcessImpl{id=y5Ih2nvk}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=zonXtkvV, name=FixedListMachineProvisioningLocation:zonX} with ports [22]
+2015-10-29 10:40:50,224 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-8]: Starting VanillaSoftwareProcessImpl{id=y5Ih2nvk} on machine SshMachineLocation[SshMachineLocation:UXuw:52.30.120.236/52.30.120.236:22@UXuw4opv]
+2015-10-29 10:41:13,659 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-13]: Execution failed, invalid result 127 for launching VanillaSoftwareProcessImpl{id=y5Ih2nvk} (throwing)
+2015-10-29 10:41:13,660 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-13]: STDERR of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=y5Ih2nvk}:f0MzaMOQ]:
+... ... .......... .......... .......... .......... 85% 2.53M 0s
+  2950K .......... .......... .......... .......... .......... 87% 30.5M 0s
+  3000K .......... .......... .......... .......... .......... 88% 2.50M 0s
+  3050K .......... .......... .......... .......... .......... 90% 34.0M 0s
+  3100K .......... .......... .......... .......... .......... 91% 2.53M 0s
+  3150K .......... .......... .......... .......... .......... 93% 2.41M 0s
+  3200K .......... .......... .......... .......... .......... 94% 90.9M 0s
+  3250K .......... .......... .......... .......... .......... 96% 2.43M 0s
+  3300K .......... .......... .......... .......... .......... 97% 62.7M 0s
+  3350K .......... .......... .......... .......... .......... 99% 2.47M 0s
+  3400K .......... .......... .......... ..                   100% 30.1M=0.7s
+2015-10-29 09:41:13 (5.01 MB/s) - Ã¢ÂÂhyperic-sigar-1.6.4.zipÃ¢ÂÂ saved [3514511/3514511]
+/tmp/brooklyn-20151029-104104140-Tmzm-launching_VanillaSoftwareProce.sh: line 17: unzip: command not found
+
+2015-10-29 10:41:13,661 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-13]: STDOUT of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=y5Ih2nvk}:f0MzaMOQ]:
+Executed /tmp/brooklyn-20151029-104104140-Tmzm-launching_VanillaSoftwareProce.sh, result 127
+
+2015-10-29 10:41:13,662 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-13]: STDIN of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=y5Ih2nvk}:f0MzaMOQ]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/G1sqfZBk/entities/VanillaSoftwareProcess_y5Ih2nvk"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+unzip hyperic-sigar-1.6.4.zip
+nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+echo $! > $PID_FILE
+2015-10-29 10:41:13,675 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-4]: Error invoking start at VanillaSoftwareProcessImpl{id=y5Ih2nvk}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 127 for launching VanillaSoftwareProcessImpl{id=y5Ih2nvk}
+2015-10-29 10:41:13,885 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-5]: Service is not up when setting running on BasicApplicationImpl{id=G1sqfZBk}; delayed 206ms but Sensor: service.isUp (java.lang.Boolean) did not recover from false; not-up-indicators={service-lifecycle-indicators-from-children-and-members=VanillaSoftwareProcessImpl{id=y5Ih2nvk} is not up}
+2015-10-29 10:41:13,885 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-5]: Setting BasicApplicationImpl{id=G1sqfZBk} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=y5Ih2nvk}}
+2015-10-29 10:41:13,885 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-8]: Setting BasicApplicationImpl{id=G1sqfZBk} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=y5Ih2nvk}}
+2015-10-29 10:41:13,886 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-5]: Error invoking start at BasicApplicationImpl{id=G1sqfZBk}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: Error invoking start at VanillaSoftwareProcessImpl{id=y5Ih2nvk}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 127 for launching VanillaSoftwareProcessImpl{id=y5Ih2nvk}
+2015-10-29 10:44:42,716 INFO  o.a.b.c.e.AbstractApplication [brooklyn-execmanager-FT1TSqdQ-16]: Stopping application BasicApplicationImpl{id=G1sqfZBk}
+2015-10-29 10:44:42,725 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-19]: Stopping VanillaSoftwareProcessImpl{id=y5Ih2nvk} in [SshMachineLocation[SshMachineLocation:UXuw:52.30.120.236/52.30.120.236:22@UXuw4opv]]
+2015-10-29 10:44:43,426 INFO  o.a.b.c.e.AbstractApplication [brooklyn-execmanager-FT1TSqdQ-16]: Stopped application BasicApplicationImpl{id=G1sqfZBk}
+2015-10-29 10:44:59,446 INFO  o.a.b.c.l.g.UtraceHostGeoLookup [Thread-48]: Geo info lookup for 127.0.0.1/127.0.0.1 returned: HostGeoInfo[Consorzio di Calcolo Interuniversitario CILEA (IT): 127.0.0.1 at (42.833301544189,12.833299636841)]
+2015-10-29 10:45:48,856 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp861381278-25]: Launched from YAML: name: dc
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.30.120.236
+
+services:
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Data collector
+  id: data collector
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    sudo apt-get update
+    sudo apt-get install openjdk-7jre
+    sudo apt-get install unzip
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+    export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+    export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+    export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+    export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+    wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+    wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+    unzip hyperic-sigar-1.6.4.zip
+    nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+    echo $! > $PID_FILE -> BasicApplicationImpl{id=djieC251} (Task[start:a1WBkuzJ])
+2015-10-29 10:45:48,868 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-33]: Starting VanillaSoftwareProcessImpl{id=iCB9PR0m}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=c0IBKDfW, name=FixedListMachineProvisioningLocation:c0IB} with ports [22]
+2015-10-29 10:45:48,870 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-37]: Starting VanillaSoftwareProcessImpl{id=iCB9PR0m} on machine SshMachineLocation[SshMachineLocation:JsjC:52.30.120.236/52.30.120.236:22@JsjCWtSx]
+2015-10-29 10:45:57,506 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-39]: Execution failed, invalid result 100 for launching VanillaSoftwareProcessImpl{id=iCB9PR0m} (throwing)
+2015-10-29 10:45:57,506 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-39]: STDERR of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=iCB9PR0m}:YUPduFK8]:
+E: Unable to locate package openjdk-7jre
+
+2015-10-29 10:45:57,506 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-39]: STDOUT of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=iCB9PR0m}:YUPduFK8]:
+... e Sources [31.0 kB]
+Hit http://eu-west-1.ec2.archive.ubuntu.com trusty/main amd64 Packages
+Hit http://eu-west-1.ec2.archive.ubuntu.com trusty/universe amd64 Packages
+Hit http://eu-west-1.ec2.archive.ubuntu.com trusty/main Translation-en
+Hit http://eu-west-1.ec2.archive.ubuntu.com trusty/universe Translation-en
+Get:13 http://security.ubuntu.com trusty-security/main amd64 Packages [357 kB]
+Ign http://eu-west-1.ec2.archive.ubuntu.com trusty/main Translation-en_US
+Ign http://eu-west-1.ec2.archive.ubuntu.com trusty/universe Translation-en_US
+Get:14 http://security.ubuntu.com trusty-security/universe amd64 Packages [117 kB]
+Get:15 http://security.ubuntu.com trusty-security/main Translation-en [194 kB]
+Get:16 http://security.ubuntu.com trusty-security/universe Translation-en [68.4 kB]
+Fetched 10.3 MB in 3s (2,827 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Executed /tmp/brooklyn-20151029-104551176-RpNT-launching_VanillaSoftwareProce.sh, result 100
+
+2015-10-29 10:45:57,506 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-39]: STDIN of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=iCB9PR0m}:YUPduFK8]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/djieC251/entities/VanillaSoftwareProcess_iCB9PR0m"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo apt-get update
+sudo apt-get install openjdk-7jre
+sudo apt-get install unzip
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+unzip hyperic-sigar-1.6.4.zip
+nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+echo $! > $PID_FILE
+2015-10-29 10:45:57,517 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-31]: Error invoking start at VanillaSoftwareProcessImpl{id=iCB9PR0m}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 100 for launching VanillaSoftwareProcessImpl{id=iCB9PR0m}
+2015-10-29 10:45:57,726 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-30]: Service is not up when setting running on BasicApplicationImpl{id=djieC251}; delayed 204ms but Sensor: service.isUp (java.lang.Boolean) did not recover from false; not-up-indicators={service-lifecycle-indicators-from-children-and-members=VanillaSoftwareProcessImpl{id=iCB9PR0m} is not up}
+2015-10-29 10:45:57,726 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-30]: Setting BasicApplicationImpl{id=djieC251} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=iCB9PR0m}}
+2015-10-29 10:45:57,726 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-29]: Setting BasicApplicationImpl{id=djieC251} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=iCB9PR0m}}
+2015-10-29 10:45:57,727 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-30]: Error invoking start at BasicApplicationImpl{id=djieC251}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: Error invoking start at VanillaSoftwareProcessImpl{id=iCB9PR0m}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 100 for launching VanillaSoftwareProcessImpl{id=iCB9PR0m}
+2015-10-29 10:47:40,269 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp861381278-26]: Launched from YAML: name: dc
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.30.120.236
+
+services:
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Data collector
+  id: data collector
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    sudo apt-get update
+    sudo apt-get install openjdk-7-jre
+    sudo apt-get install unzip
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+    export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+    export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+    export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+    export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+    wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+    wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+    unzip hyperic-sigar-1.6.4.zip
+    nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+    echo $! > $PID_FILE -> BasicApplicationImpl{id=tOR0mEtI} (Task[start:J3pxxtf2])
+2015-10-29 10:47:40,281 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-56]: Starting VanillaSoftwareProcessImpl{id=TdoJ6wHr}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=FSK3W6vv, name=FixedListMachineProvisioningLocation:FSK3} with ports [22]
+2015-10-29 10:47:40,289 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-51]: Starting VanillaSoftwareProcessImpl{id=TdoJ6wHr} on machine SshMachineLocation[SshMachineLocation:eMaz:52.30.120.236/52.30.120.236:22@eMaz9POf]
+2015-10-29 10:47:46,500 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-54]: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=TdoJ6wHr} (throwing)
+2015-10-29 10:47:46,500 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-54]: STDOUT of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=TdoJ6wHr}:Es34cUCM]:
+... btdb1 libthai-data
+  libthai0 libtiff5 libtxc-dxtn-s2tc0 libudisks2-0 libv4l-0 libv4lconvert0
+  libvorbis0a libvorbisenc2 libvorbisfile3 libvpx1 libwayland-client0
+  libwayland-cursor0 libx11-xcb1 libxaw7 libxcb-dri2-0 libxcb-dri3-0
+  libxcb-glx0 libxcb-present0 libxcb-render0 libxcb-shape0 libxcb-shm0
+  libxcb-sync1 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxft2
+  libxi6 libxinerama1 libxkbcommon0 libxmu6 libxpm4 libxrandr2 libxrender1
+  libxshmfence1 libxt6 libxtst6 libxv1 libxxf86dga1 libxxf86vm1 lksctp-tools
+  openjdk-7-jre openjdk-7-jre-headless policykit-1-gnome
+  sound-theme-freedesktop tzdata-java udisks2 x11-common x11-utils
+The following packages will be upgraded:
+  gcc-4.8-base libstdc++6 tzdata
+3 upgraded, 169 newly installed, 0 to remove and 122 not upgraded.
+Need to get 77.7 MB of archives.
+After this operation, 228 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Abort.
+Executed /tmp/brooklyn-20151029-104742469-g1gm-launching_VanillaSoftwareProce.sh, result 1
+
+2015-10-29 10:47:46,500 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-54]: STDIN of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=TdoJ6wHr}:Es34cUCM]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/tOR0mEtI/entities/VanillaSoftwareProcess_TdoJ6wHr"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo apt-get update
+sudo apt-get install openjdk-7-jre
+sudo apt-get install unzip
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+unzip hyperic-sigar-1.6.4.zip
+nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+echo $! > $PID_FILE
+2015-10-29 10:47:46,505 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-53]: Error invoking start at VanillaSoftwareProcessImpl{id=TdoJ6wHr}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=TdoJ6wHr}
+2015-10-29 10:47:46,711 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-47]: Service is not up when setting running on BasicApplicationImpl{id=tOR0mEtI}; delayed 203ms but Sensor: service.isUp (java.lang.Boolean) did not recover from false; not-up-indicators={service-lifecycle-indicators-from-children-and-members=VanillaSoftwareProcessImpl{id=TdoJ6wHr} is not up}
+2015-10-29 10:47:46,712 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-47]: Setting BasicApplicationImpl{id=tOR0mEtI} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=TdoJ6wHr}}
+2015-10-29 10:47:46,712 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-56]: Setting BasicApplicationImpl{id=tOR0mEtI} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=TdoJ6wHr}}
+2015-10-29 10:47:46,712 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-47]: Error invoking start at BasicApplicationImpl{id=tOR0mEtI}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: Error invoking start at VanillaSoftwareProcessImpl{id=TdoJ6wHr}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=TdoJ6wHr}
+2015-10-29 10:55:17,633 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp861381278-26]: Launched from YAML: name: dc
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.31.2.31
+
+services:
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Data collector
+  id: data collector
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    sudo apt-get update
+    sudo apt-get install openjdk-7-jre
+    sudo apt-get install unzip
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+    export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+    export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+    export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+    export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+    wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+    wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+    unzip hyperic-sigar-1.6.4.zip
+    nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+    echo $! > $PID_FILE -> BasicApplicationImpl{id=qvcfyLet} (Task[start:aB4a7sQG])
+2015-10-29 10:55:17,642 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-70]: Starting VanillaSoftwareProcessImpl{id=om0uL04c}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=uuVhm63O, name=FixedListMachineProvisioningLocation:uuVh} with ports [22]
+2015-10-29 10:55:17,647 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-70]: Starting VanillaSoftwareProcessImpl{id=om0uL04c} on machine SshMachineLocation[SshMachineLocation:il30:52.31.2.31/52.31.2.31:22@il3071sP]
+2015-10-29 10:55:42,939 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-75]: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=om0uL04c} (throwing)
+2015-10-29 10:55:42,940 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-75]: STDOUT of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=om0uL04c}:GEft4TOW]:
+... btdb1 libthai-data
+  libthai0 libtiff5 libtxc-dxtn-s2tc0 libudisks2-0 libv4l-0 libv4lconvert0
+  libvorbis0a libvorbisenc2 libvorbisfile3 libvpx1 libwayland-client0
+  libwayland-cursor0 libx11-xcb1 libxaw7 libxcb-dri2-0 libxcb-dri3-0
+  libxcb-glx0 libxcb-present0 libxcb-render0 libxcb-shape0 libxcb-shm0
+  libxcb-sync1 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxft2
+  libxi6 libxinerama1 libxkbcommon0 libxmu6 libxpm4 libxrandr2 libxrender1
+  libxshmfence1 libxt6 libxtst6 libxv1 libxxf86dga1 libxxf86vm1 lksctp-tools
+  openjdk-7-jre openjdk-7-jre-headless policykit-1-gnome
+  sound-theme-freedesktop tzdata-java udisks2 x11-common x11-utils
+The following packages will be upgraded:
+  gcc-4.8-base libstdc++6 tzdata
+3 upgraded, 169 newly installed, 0 to remove and 122 not upgraded.
+Need to get 77.7 MB of archives.
+After this operation, 228 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Abort.
+Executed /tmp/brooklyn-20151029-105535025-pgq7-launching_VanillaSoftwareProce.sh, result 1
+
+2015-10-29 10:55:42,940 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-75]: STDIN of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=om0uL04c}:GEft4TOW]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/qvcfyLet/entities/VanillaSoftwareProcess_om0uL04c"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo apt-get update
+sudo apt-get install openjdk-7-jre
+sudo apt-get install unzip
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+unzip hyperic-sigar-1.6.4.zip
+nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+echo $! > $PID_FILE
+2015-10-29 10:55:42,943 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-63]: Error invoking start at VanillaSoftwareProcessImpl{id=om0uL04c}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=om0uL04c}
+2015-10-29 10:55:43,149 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-66]: Service is not up when setting running on BasicApplicationImpl{id=qvcfyLet}; delayed 203ms but Sensor: service.isUp (java.lang.Boolean) did not recover from false; not-up-indicators={service-lifecycle-indicators-from-children-and-members=VanillaSoftwareProcessImpl{id=om0uL04c} is not up}
+2015-10-29 10:55:43,149 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-66]: Setting BasicApplicationImpl{id=qvcfyLet} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=om0uL04c}}
+2015-10-29 10:55:43,149 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-76]: Setting BasicApplicationImpl{id=qvcfyLet} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=om0uL04c}}
+2015-10-29 10:55:43,149 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-66]: Error invoking start at BasicApplicationImpl{id=qvcfyLet}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: Error invoking start at VanillaSoftwareProcessImpl{id=om0uL04c}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=om0uL04c}
+2015-10-29 10:58:33,638 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp861381278-25]: Launched from YAML: name: dc
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.31.2.31
+
+services:
+- serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+  name: Data collector
+  id: data collector
+  provisioning.properties:
+    stopIptables: true
+
+  launch.command: |
+    sudo apt-get update
+    sudo apt-get install openjdk-7-jre
+    sudo apt-get install unzip
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+    export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+    export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+    export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+    export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+    export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+    export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+    wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+    wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+    unzip hyperic-sigar-1.6.4.zip
+    nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+    echo $! > $PID_FILE -> BasicApplicationImpl{id=aYrqCOaH} (Task[start:TZGRy5lU])
+2015-10-29 10:58:33,668 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-89]: Starting VanillaSoftwareProcessImpl{id=Cb8vpM63}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=ScKDsFFq, name=FixedListMachineProvisioningLocation:ScKD} with ports [22]
+2015-10-29 10:58:33,681 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-FT1TSqdQ-89]: Starting VanillaSoftwareProcessImpl{id=Cb8vpM63} on machine SshMachineLocation[SshMachineLocation:TseL:52.31.2.31/52.31.2.31:22@TseLRx8s]
+2015-10-29 10:58:40,666 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-94]: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=Cb8vpM63} (throwing)
+2015-10-29 10:58:40,666 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-94]: STDOUT of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=Cb8vpM63}:RmYR9Djz]:
+... btdb1 libthai-data
+  libthai0 libtiff5 libtxc-dxtn-s2tc0 libudisks2-0 libv4l-0 libv4lconvert0
+  libvorbis0a libvorbisenc2 libvorbisfile3 libvpx1 libwayland-client0
+  libwayland-cursor0 libx11-xcb1 libxaw7 libxcb-dri2-0 libxcb-dri3-0
+  libxcb-glx0 libxcb-present0 libxcb-render0 libxcb-shape0 libxcb-shm0
+  libxcb-sync1 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxft2
+  libxi6 libxinerama1 libxkbcommon0 libxmu6 libxpm4 libxrandr2 libxrender1
+  libxshmfence1 libxt6 libxtst6 libxv1 libxxf86dga1 libxxf86vm1 lksctp-tools
+  openjdk-7-jre openjdk-7-jre-headless policykit-1-gnome
+  sound-theme-freedesktop tzdata-java udisks2 x11-common x11-utils
+The following packages will be upgraded:
+  gcc-4.8-base libstdc++6 tzdata
+3 upgraded, 169 newly installed, 0 to remove and 122 not upgraded.
+Need to get 77.7 MB of archives.
+After this operation, 228 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Abort.
+Executed /tmp/brooklyn-20151029-105835745-VDMm-launching_VanillaSoftwareProce.sh, result 1
+
+2015-10-29 10:58:40,666 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-FT1TSqdQ-94]: STDIN of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=Cb8vpM63}:RmYR9Djz]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/aYrqCOaH/entities/VanillaSoftwareProcess_Cb8vpM63"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo apt-get update
+sudo apt-get install openjdk-7-jre
+sudo apt-get install unzip
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_IP=52.30.230.228
+export MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT=8170
+export MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD=10
+export MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD=25
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_ID=amazon
+export MODACLOUDS_TOWER4CLOUDS_CLOUD_PROVIDER_TYPE=IaaS
+export MODACLOUDS_TOWER4CLOUDS_VM_ID=machineId
+export MODACLOUDS_TOWER4CLOUDS_VM_TYPE=machine
+wget -O data-collector-2.0.4.jar "https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0.4/data-collector-2.0.4.jar"
+wget -O hyperic-sigar-1.6.4.zip "http://sourceforge.net/projects/sigar/files/sigar/1.6/hyperic-sigar-1.6.4.zip/download?use_mirror=switch"
+unzip hyperic-sigar-1.6.4.zip
+nohup java -Djava.library.path=./hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.4.jar tower4clouds > dc.out 2>&1 &
+echo $! > $PID_FILE
+2015-10-29 10:58:40,670 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-82]: Error invoking start at VanillaSoftwareProcessImpl{id=Cb8vpM63}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=Cb8vpM63}
+2015-10-29 10:58:40,875 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-84]: Service is not up when setting running on BasicApplicationImpl{id=aYrqCOaH}; delayed 203ms but Sensor: service.isUp (java.lang.Boolean) did not recover from false; not-up-indicators={service-lifecycle-indicators-from-children-and-members=VanillaSoftwareProcessImpl{id=Cb8vpM63} is not up}
+2015-10-29 10:58:40,876 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-84]: Setting BasicApplicationImpl{id=aYrqCOaH} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=Cb8vpM63}}
+2015-10-29 10:58:40,876 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-FT1TSqdQ-82]: Setting BasicApplicationImpl{id=aYrqCOaH} on-fire due to problems when expected running, up=false, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: VanillaSoftwareProcessImpl{id=Cb8vpM63}}
+2015-10-29 10:58:40,876 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-FT1TSqdQ-84]: Error invoking start at BasicApplicationImpl{id=aYrqCOaH}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: Error invoking start at VanillaSoftwareProcessImpl{id=Cb8vpM63}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=Cb8vpM63}
+2015-10-30 12:13:16,024 INFO  o.a.b.l.BrooklynLauncher [main]: Starting Brooklyn web-console with passwordless access on localhost and protected access from any other interfaces (no bind address specified)
+2015-10-30 12:13:18,200 INFO  o.a.b.l.BrooklynWebServer [main]: Started Brooklyn console at http://127.0.0.1:8081/, running classpath://brooklyn.war
+2015-10-30 12:13:18,215 INFO  o.a.b.l.BrooklynLauncher [main]: Persistence disabled
+2015-10-30 12:13:18,215 INFO  o.a.b.l.BrooklynLauncher [main]: High availability disabled
+2015-10-30 12:13:23,649 INFO  org.apache.brooklyn.cli.Main [main]: Launched Brooklyn; will now block until shutdown command received via GUI/API (recommended) or process interrupt.
+2015-10-30 12:33:07,550 INFO  o.a.b.r.s.p.DelegatingSecurityProvider [brooklyn-jetty-server-8081-qtp807830727-21]: REST using security provider org.apache.brooklyn.rest.security.provider.BrooklynUserWithRandomPasswordSecurityProvider
+2015-10-30 12:33:07,550 INFO  o.a.b.r.s.p.BrooklynUserWithRandomPasswordSecurityProvider [brooklyn-jetty-server-8081-qtp807830727-21]: Allowing access to web console from localhost or with brooklyn:tPGOCP0C9z
+2015-10-30 12:33:11,626 INFO  o.a.b.c.l.g.UtraceHostGeoLookup [Thread-14]: Geo info lookup for 127.0.0.1/127.0.0.1 returned: HostGeoInfo[Fastweb, Milan (IT): 127.0.0.1 at (45.46369934082,9.188099861145)]
+2015-10-30 14:25:53,916 WARN  brooklyn.REST [brooklyn-jetty-server-8081-qtp807830727-22]: Request rcQs9T (GET /v1/server/up/extended from 127.0.0.1) failed: org.eclipse.jetty.io.EofException
+org.eclipse.jetty.io.EofException: null
+	at org.eclipse.jetty.http.HttpGenerator.flushBuffer(HttpGenerator.java:914) ~[org.eclipse.jetty-jetty-http-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.http.AbstractGenerator.flush(AbstractGenerator.java:443) ~[org.eclipse.jetty-jetty-http-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.HttpOutput.flush(HttpOutput.java:100) ~[org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.AbstractHttpConnection$Output.flush(AbstractHttpConnection.java:1123) ~[org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at com.sun.jersey.spi.container.servlet.WebComponent$Writer.flush(WebComponent.java:308) ~[com.sun.jersey-jersey-servlet-1.18.1.jar:1.18.1]
+	at java.util.zip.DeflaterOutputStream.flush(DeflaterOutputStream.java:282) ~[na:1.7.0_79]
+	at com.sun.jersey.spi.container.ContainerResponse$CommittingOutputStream.flush(ContainerResponse.java:146) ~[com.sun.jersey-jersey-server-1.18.1.jar:1.18.1]
+	at org.codehaus.jackson.impl.Utf8Generator.flush(Utf8Generator.java:1091) ~[org.codehaus.jackson-jackson-core-asl-1.9.13.jar:1.9.13]
+	at org.codehaus.jackson.map.ObjectWriter.writeValue(ObjectWriter.java:328) ~[org.codehaus.jackson-jackson-mapper-asl-1.9.13.jar:1.9.13]
+	at org.codehaus.jackson.jaxrs.JacksonJsonProvider.writeTo(JacksonJsonProvider.java:557) ~[org.codehaus.jackson-jackson-jaxrs-1.9.13.jar:1.9.13]
+	at com.sun.jersey.spi.container.ContainerResponse.write(ContainerResponse.java:302) ~[com.sun.jersey-jersey-server-1.18.1.jar:1.18.1]
+	at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1510) ~[com.sun.jersey-jersey-server-1.18.1.jar:1.18.1]
+	at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419) ~[com.sun.jersey-jersey-server-1.18.1.jar:1.18.1]
+	at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409) ~[com.sun.jersey-jersey-server-1.18.1.jar:1.18.1]
+	at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409) ~[com.sun.jersey-jersey-servlet-1.18.1.jar:1.18.1]
+	at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:540) ~[com.sun.jersey-jersey-servlet-1.18.1.jar:1.18.1]
+	at com.sun.jersey.spi.container.servlet.ServletContainer.doFilter(ServletContainer.java:909) ~[com.sun.jersey-jersey-servlet-1.18.1.jar:1.18.1]
+	at com.sun.jersey.spi.container.servlet.ServletContainer.doFilter(ServletContainer.java:857) ~[com.sun.jersey-jersey-servlet-1.18.1.jar:1.18.1]
+	at com.sun.jersey.spi.container.servlet.ServletContainer.doFilter(ServletContainer.java:811) ~[com.sun.jersey-jersey-servlet-1.18.1.jar:1.18.1]
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1467) [org.eclipse.jetty-jetty-servlet-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.apache.brooklyn.rest.filter.HaMasterCheckFilter.doFilter(HaMasterCheckFilter.java:101) ~[org.apache.brooklyn-brooklyn-rest-server-0.8.0-incubating.jar:0.8.0-incubating]
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1467) [org.eclipse.jetty-jetty-servlet-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.apache.brooklyn.rest.filter.LoggingFilter.doFilter(LoggingFilter.java:89) ~[org.apache.brooklyn-brooklyn-rest-server-0.8.0-incubating.jar:0.8.0-incubating]
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1467) [org.eclipse.jetty-jetty-servlet-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.apache.brooklyn.rest.filter.BrooklynPropertiesSecurityFilter.doFilter(BrooklynPropertiesSecurityFilter.java:122) [org.apache.brooklyn-brooklyn-rest-server-0.8.0-incubating.jar:0.8.0-incubating]
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1467) [org.eclipse.jetty-jetty-servlet-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.apache.brooklyn.rest.filter.RequestTaggingFilter.doFilter(RequestTaggingFilter.java:49) [org.apache.brooklyn-brooklyn-rest-server-0.8.0-incubating.jar:0.8.0-incubating]
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1467) [org.eclipse.jetty-jetty-servlet-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:501) [org.eclipse.jetty-jetty-servlet-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:137) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:557) [org.eclipse.jetty-jetty-security-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:231) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1086) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:429) [org.eclipse.jetty-jetty-servlet-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:193) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1020) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:135) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:255) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:116) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.Server.handle(Server.java:370) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.AbstractHttpConnection.handleRequest(AbstractHttpConnection.java:494) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.AbstractHttpConnection.headerComplete(AbstractHttpConnection.java:971) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.AbstractHttpConnection$RequestHandler.headerComplete(AbstractHttpConnection.java:1033) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.http.HttpParser.parseNext(HttpParser.java:644) [org.eclipse.jetty-jetty-http-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.http.HttpParser.parseAvailable(HttpParser.java:235) [org.eclipse.jetty-jetty-http-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.server.AsyncHttpConnection.handle(AsyncHttpConnection.java:82) [org.eclipse.jetty-jetty-server-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.io.nio.SelectChannelEndPoint.handle(SelectChannelEndPoint.java:696) [org.eclipse.jetty-jetty-io-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.io.nio.SelectChannelEndPoint$1.run(SelectChannelEndPoint.java:53) [org.eclipse.jetty-jetty-io-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:608) [org.eclipse.jetty-jetty-util-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:543) [org.eclipse.jetty-jetty-util-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at java.lang.Thread.run(Thread.java:745) [na:1.7.0_79]
+Caused by: java.nio.channels.ClosedChannelException: null
+	at sun.nio.ch.SocketChannelImpl.ensureWriteOpen(SocketChannelImpl.java:268) ~[na:1.7.0_79]
+	at sun.nio.ch.SocketChannelImpl.write(SocketChannelImpl.java:513) ~[na:1.7.0_79]
+	at java.nio.channels.SocketChannel.write(SocketChannel.java:493) ~[na:1.7.0_79]
+	at org.eclipse.jetty.io.nio.ChannelEndPoint.gatheringFlush(ChannelEndPoint.java:376) ~[org.eclipse.jetty-jetty-io-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.io.nio.ChannelEndPoint.flush(ChannelEndPoint.java:335) ~[org.eclipse.jetty-jetty-io-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.io.nio.SelectChannelEndPoint.flush(SelectChannelEndPoint.java:378) [org.eclipse.jetty-jetty-io-8.1.17.v20150415.jar:8.1.17.v20150415]
+	at org.eclipse.jetty.http.HttpGenerator.flushBuffer(HttpGenerator.java:838) ~[org.eclipse.jetty-jetty-http-8.1.17.v20150415.jar:8.1.17.v20150415]
+	... 50 common frames omitted
+2015-10-30 15:30:36,170 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp807830727-21]: Launched from YAML: name: Nuro case study on the Cloud
+location:
+  byon:
+    user: vagrant
+    privateKeyFile: ./seaclouds_id_rsa
+    hosts:
+    - 192.168.100.12
+    - 192.168.100.13
+
+services:
+
+- serviceType: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess
+  brooklyn.config:
+    launch.command: "true"
+    stop.command: "true"
+    checkRunning.command: "true"
+    children.startable.mode: background_late
+  brooklyn.children:
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: PHP
+    id: php
+    provisioning.properties:
+      stopIptables: true
+
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+      wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+      sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+      sudo chmod -R 777 /var/www/html/nuro-casestudy
+      cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+      sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+      sudo service apache2 restart
+
+    checkRunning.command: |
+      sudo service apache2 status
+
+    stop.command: |
+      sudo service apache2 stop
+
+    env:
+      USER: seaclouds
+      PASSWORD: preview
+      VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+      HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+      DB_NAME: "database1"
+      DB_USER: "brooklyn"
+      DB_PASSWORD: "br00k11n"
+
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: DC
+    id: nuro-dc
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get install -y openjdk-7-jre
+      wget -O nuro-data-collector.jar https://www.dropbox.com/s/db6o4f4k5cgv16y/nuro-data-collector-0.8.0-SNAPSHOT-jar-with-dependencies.jar
+      wget -O config.properties https://www.dropbox.com/s/pp22gk2g8o5gzte/config.properties
+      nohup java -jar nuro-data-collector.jar ./config.properties > nuroDc.log 2>&1 &
+      echo $! > $PID_FILE
+
+    install.latch: $brooklyn:component("php").attributeWhenReady("service.isUp")
+    
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  id: db
+  name: Nuro DB
+  brooklyn.config:
+    datastore.creation.script.url: http://seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/create_db_and_tables-20150921_1543.sql -> BasicApplicationImpl{id=QBHE5Emi} (Task[start:iyMaVwOO])
+2015-10-30 15:30:36,259 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-8]: Starting VanillaSoftwareProcessImpl{id=obnhko5O}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=QksQkpc7, name=FixedListMachineProvisioningLocation:QksQ} with ports [22]
+2015-10-30 15:30:36,259 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-10]: Starting MySqlNodeImpl{id=BhIS25zv}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=QksQkpc7, name=FixedListMachineProvisioningLocation:QksQ} with ports [22, 3306]
+2015-10-30 15:30:36,317 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-12]: Starting MySqlNodeImpl{id=BhIS25zv} on machine SshMachineLocation[SshMachineLocation:vX7K:192.168.100.13/192.168.100.13:22@vX7K2YJ5]
+2015-10-30 15:30:36,317 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-11]: Starting VanillaSoftwareProcessImpl{id=obnhko5O} on machine SshMachineLocation[SshMachineLocation:zzw3:192.168.100.12/192.168.100.12:22@zzw3XPYe]
+2015-10-30 15:30:38,832 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-20]: Starting VanillaSoftwareProcessImpl{id=hyaIXWzl} on machine SshMachineLocation[SshMachineLocation:zzw3:192.168.100.12/192.168.100.12:22@zzw3XPYe]
+2015-10-30 15:30:38,834 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-24]: Starting VanillaSoftwareProcessImpl{id=tFYMWMOT} on machine SshMachineLocation[SshMachineLocation:zzw3:192.168.100.12/192.168.100.12:22@zzw3XPYe]
+2015-10-30 15:31:21,826 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-34]: Execution failed, invalid result 2 for launching VanillaSoftwareProcessImpl{id=tFYMWMOT} (throwing)
+2015-10-30 15:31:21,826 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-34]: STDERR of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=tFYMWMOT}:C83kJ45S]:
+... frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+--2015-10-30 14:31:21--  http://seaclouds:*password*@seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+Resolving seaclouds-dev.nurogames.com (seaclouds-dev.nurogames.com)... 87.79.6.131
+Connecting to seaclouds-dev.nurogames.com (seaclouds-dev.nurogames.com)|87.79.6.131|:80... connected.
+HTTP request sent, awaiting response... 401 Authorization Required
+Reusing existing connection to seaclouds-dev.nurogames.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 10192 (10.0K) [application/x-gzip]
+Saving to: `nurogames-seaclouds-casestudy-php.tgz'
+     0K .........                                             100%  153K=0.07s
+2015-10-30 14:31:21 (153 KB/s) - `nurogames-seaclouds-casestudy-php.tgz' saved [10192/10192]
+tar: /var/www/html: Cannot open: No such file or directory
+tar: Error is not recoverable: exiting now
+
+2015-10-30 15:31:21,826 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-34]: STDOUT of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=tFYMWMOT}:C83kJ45S]:
+... ng module status.
+Enabling module auth_basic.
+Enabling module deflate.
+Enabling module authz_default.
+Enabling module authz_user.
+Enabling module authz_groupfile.
+Enabling module authn_file.
+Enabling module authz_host.
+Enabling module reqtimeout.
+Setting up apache2-mpm-prefork (2.2.22-1ubuntu1.10) ...
+ * Starting web server apache2
+   ...done.
+Setting up apache2 (2.2.22-1ubuntu1.10) ...
+Setting up php5-common (5.3.10-1ubuntu3.21) ...
+Setting up libapache2-mod-php5 (5.3.10-1ubuntu3.21) ...
+ * Restarting web server apache2
+ ... waiting    ...done.
+Setting up php5 (5.3.10-1ubuntu3.21) ...
+Setting up php5-cli (5.3.10-1ubuntu3.21) ...
+update-alternatives: using /usr/bin/php5 to provide /usr/bin/php (php) in auto mode.
+Setting up php5-mysql (5.3.10-1ubuntu3.21) ...
+Setting up ssl-cert (1.0.28ubuntu0.1) ...
+Setting up unzip (6.0-4ubuntu2.4) ...
+Processing triggers for libc-bin ...
+ldconfig deferred processing now taking place
+Executed /tmp/brooklyn-20151030-153039111-fPTq-launching_VanillaSoftwareProce.sh, result 2
+
+2015-10-30 15:31:21,826 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-34]: STDIN of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=tFYMWMOT}:C83kJ45S]:
+export RUN_DIR="/home/vagrant/brooklyn-managed-processes/apps/QBHE5Emi/entities/VanillaSoftwareProcess_tFYMWMOT"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo apt-get update
+sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+sudo chmod -R 777 /var/www/html/nuro-casestudy
+cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+sudo service apache2 restart
+
+2015-10-30 15:31:21,832 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-W8Aj6uIn-11]: Error invoking start at VanillaSoftwareProcessImpl{id=tFYMWMOT}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 2 for launching VanillaSoftwareProcessImpl{id=tFYMWMOT}
+2015-10-30 15:31:21,839 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-W8Aj6uIn-15]: Error invoking start at VanillaSoftwareProcessImpl{id=hyaIXWzl}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalArgumentException: Error resolving config install.latch, $brooklyn:entity("php").attributeWhenReady("service.isUp"), in org.apache.brooklyn.util.core.task.BasicExecutionContext@5f0f46d6([Wrapped[contextEntity:VanillaSoftwareProcessImpl{id=hyaIXWzl}]]): org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.CompoundRuntimeException: Aborted waiting for ready from VanillaSoftwareProcessImpl{id=tFYMWMOT} Sensor: service.isUp (java.lang.Boolean): Aborted waiting for ready from VanillaSoftwareProcessImpl{id=tFYMWMOT} Sensor: service.isUp (java.lang.Boolean): java.lang.Exception: Abort due to VanillaSoftwareProcessImpl{id=tFYMWMOT} -> Sensor: service.state (org.apache.brooklyn.core.entity.lifecycle.Lifecycle)
+2015-10-30 15:34:53,614 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-W8Aj6uIn-1]: Error invoking start at BasicApplicationImpl{id=QBHE5Emi}: org.apache.brooklyn.util.exceptions.RuntimeInterruptedException: java.lang.InterruptedException
+2015-10-30 15:34:53,624 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-W8Aj6uIn-4]: Setting VanillaSoftwareProcessImpl{id=obnhko5O} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-30 15:34:53,624 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-19]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=obnhko5O}: (vagrant@192.168.100.12:22) (vagrant@192.168.100.12:22) error acquiring Put(path=[/tmp/brooklyn-20151030-153442352-mL0A-check-running_VanillaSoftwareP.sh 286]) (attempt 1/1, in time 11.3s/2m); out of retries: (vagrant@192.168.100.12:22) (vagrant@192.168.100.12:22) error acquiring SFTPClient() (attempt 1/1, in time 11.3s/2m); out of retries: null (throwing)
+2015-10-30 15:34:53,624 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-19]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=obnhko5O}:T83p0VAc]:
+export RUN_DIR="/home/vagrant/brooklyn-managed-processes/apps/QBHE5Emi/entities/VanillaSoftwareProcess_obnhko5O"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+true
+2015-10-30 15:36:35,403 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp807830727-23]: Launched from YAML: name: Nuro case study on the Cloud
+location:
+  byon:
+    user: vagrant
+    privateKeyFile: ./seaclouds_id_rsa
+    hosts:
+    - 192.168.100.12
+    - 192.168.100.13
+
+services:
+
+- serviceType: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess
+  name: DC+PHP
+  id: dc+php
+  brooklyn.config:
+    launch.command: "true"
+    stop.command: "true"
+    checkRunning.command: "true"
+    children.startable.mode: background_late
+  brooklyn.children:
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: PHP
+    id: php
+    provisioning.properties:
+      stopIptables: true
+
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+      wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+      sudo mkdir /var/www/html
+      sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+      sudo chmod -R 777 /var/www/html/nuro-casestudy
+      cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+      sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+      sudo service apache2 restart
+
+    checkRunning.command: |
+      sudo service apache2 status
+
+    stop.command: |
+      sudo service apache2 stop
+
+    env:
+      USER: seaclouds
+      PASSWORD: preview
+      VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+      HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+      DB_NAME: "database1"
+      DB_USER: "brooklyn"
+      DB_PASSWORD: "br00k11n"
+
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: DC
+    id: dc
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get install -y openjdk-7-jre
+      wget -O nuro-data-collector.jar https://www.dropbox.com/s/db6o4f4k5cgv16y/nuro-data-collector-0.8.0-SNAPSHOT-jar-with-dependencies.jar
+      wget -O config.properties https://www.dropbox.com/s/pp22gk2g8o5gzte/config.properties
+      nohup java -jar nuro-data-collector.jar ./config.properties > nuroDc.log 2>&1 &
+      echo $! > $PID_FILE
+
+    install.latch: $brooklyn:component("php").attributeWhenReady("service.isUp")
+
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  id: db
+  name: Nuro DB
+  brooklyn.config:
+    datastore.creation.script.url: http://seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/create_db_and_tables-20150921_1543.sql -> BasicApplicationImpl{id=MWPPGT5Y} (Task[start:oP6RLxR0])
+2015-10-30 15:36:35,415 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-59]: Starting VanillaSoftwareProcessImpl{id=WdSYmyoG}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=K9j2AxWg, name=FixedListMachineProvisioningLocation:K9j2} with ports [22]
+2015-10-30 15:36:35,420 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-55]: Starting VanillaSoftwareProcessImpl{id=WdSYmyoG} on machine SshMachineLocation[SshMachineLocation:V45Y:192.168.100.12/192.168.100.12:22@V45YdsQx]
+2015-10-30 15:36:35,424 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-64]: Starting MySqlNodeImpl{id=XOYpbE8s}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=K9j2AxWg, name=FixedListMachineProvisioningLocation:K9j2} with ports [22, 3306]
+2015-10-30 15:36:35,440 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-59]: Starting MySqlNodeImpl{id=XOYpbE8s} on machine SshMachineLocation[SshMachineLocation:VpUm:192.168.100.13/192.168.100.13:22@VpUmWvLV]
+2015-10-30 15:36:36,046 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-56]: Starting VanillaSoftwareProcessImpl{id=kTjeU9fo} on machine SshMachineLocation[SshMachineLocation:V45Y:192.168.100.12/192.168.100.12:22@V45YdsQx]
+2015-10-30 15:36:36,055 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-69]: Starting VanillaSoftwareProcessImpl{id=Hq7G46CP} on machine SshMachineLocation[SshMachineLocation:V45Y:192.168.100.12/192.168.100.12:22@V45YdsQx]
+2015-10-30 15:42:57,803 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-W8Aj6uIn-58]: Error invoking start at MySqlNodeImpl{id=XOYpbE8s}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.RuntimeException: Error getting resource 'http://seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/create_db_and_tables-20150921_1543.sql' for MySqlNodeImpl{id=XOYpbE8s}: java.lang.IllegalStateException: Invalid response invoking http://seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/create_db_and_tables-20150921_1543.sql: response code 401
+2015-10-30 15:42:57,824 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-W8Aj6uIn-57]: Setting BasicApplicationImpl{id=MWPPGT5Y} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: MySqlNodeImpl{id=XOYpbE8s}}
+2015-10-30 15:42:57,824 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-W8Aj6uIn-57]: Error invoking start at BasicApplicationImpl{id=MWPPGT5Y}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: 1 of 2 parallel child tasks failed: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: Error invoking start at MySqlNodeImpl{id=XOYpbE8s}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.RuntimeException: Error getting resource 'http://seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/create_db_and_tables-20150921_1543.sql' for MySqlNodeImpl{id=XOYpbE8s}: java.lang.IllegalStateException: Invalid response invoking http://seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/create_db_and_tables-20150921_1543.sql: response code 401
+2015-10-30 15:45:39,972 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp807830727-876]: Launched from YAML: name: Nuro case study on the Cloud
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.31.55.98
+    - 52.31.55.68
+
+services:
+
+- serviceType: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess
+  name: DC+PHP
+  id: dc+php
+  brooklyn.config:
+    launch.command: "true"
+    stop.command: "true"
+    checkRunning.command: "true"
+    children.startable.mode: background_late
+  brooklyn.children:
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: PHP
+    id: php
+    provisioning.properties:
+      stopIptables: true
+
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+      wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+      sudo mkdir /var/www/html
+      sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+      sudo chmod -R 777 /var/www/html/nuro-casestudy
+      cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+      sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+      sudo service apache2 restart
+
+    checkRunning.command: |
+      sudo service apache2 status
+
+    stop.command: |
+      sudo service apache2 stop
+
+    env:
+      USER: seaclouds
+      PASSWORD: preview
+      VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+      HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+      DB_NAME: "database1"
+      DB_USER: "brooklyn"
+      DB_PASSWORD: "br00k11n"
+
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: DC
+    id: dc
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get install -y openjdk-7-jre
+      wget -O nuro-data-collector.jar https://www.dropbox.com/s/db6o4f4k5cgv16y/nuro-data-collector-0.8.0-SNAPSHOT-jar-with-dependencies.jar
+      wget -O config.properties https://www.dropbox.com/s/pp22gk2g8o5gzte/config.properties
+      nohup java -jar nuro-data-collector.jar ./config.properties > nuroDc.log 2>&1 &
+      echo $! > $PID_FILE
+
+    install.latch: $brooklyn:component("php").attributeWhenReady("service.isUp")
+
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  id: db
+  name: Nuro DB
+  brooklyn.config:
+    datastore.creation.script.url: ./create.sql -> BasicApplicationImpl{id=HtjIZ7XZ} (Task[start:Wg5hkEEp])
+2015-10-30 15:45:39,987 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-109]: Starting VanillaSoftwareProcessImpl{id=msWB8DPy}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=PfviE1EX, name=FixedListMachineProvisioningLocation:Pfvi} with ports [22]
+2015-10-30 15:45:39,993 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-135]: Starting VanillaSoftwareProcessImpl{id=msWB8DPy} on machine SshMachineLocation[SshMachineLocation:SlSb:52.31.55.98/52.31.55.98:22@SlSbDEAT]
+2015-10-30 15:45:39,996 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-109]: Starting MySqlNodeImpl{id=Vhs7IqwD}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=PfviE1EX, name=FixedListMachineProvisioningLocation:Pfvi} with ports [22, 3306]
+2015-10-30 15:45:39,997 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-144]: Starting MySqlNodeImpl{id=Vhs7IqwD} on machine SshMachineLocation[SshMachineLocation:uXeq:52.31.55.68/52.31.55.68:22@uXeqntFQ]
+2015-10-30 15:45:53,339 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-149]: Starting VanillaSoftwareProcessImpl{id=kyGNPLVw} on machine SshMachineLocation[SshMachineLocation:SlSb:52.31.55.98/52.31.55.98:22@SlSbDEAT]
+2015-10-30 15:45:53,343 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-153]: Starting VanillaSoftwareProcessImpl{id=iFNkFeuK} on machine SshMachineLocation[SshMachineLocation:SlSb:52.31.55.98/52.31.55.98:22@SlSbDEAT]
+2015-10-30 15:46:22,529 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-166]: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=iFNkFeuK} (throwing)
+2015-10-30 15:46:22,529 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-166]: STDERR of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=iFNkFeuK}:zJ3NICKp]:
+... API
+php5_invoke mysqli: already enabled for apache2 SAPI
+apache2_switch_mpm Switch to prefork
+apache2_invoke: Enable module php5
+--2015-10-30 14:46:22--  http://seaclouds:*password*@seaclouds-dev.nurogames.com/nuro-casestudy/versions/D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+Resolving seaclouds-dev.nurogames.com (seaclouds-dev.nurogames.com)... 87.79.6.131
+Connecting to seaclouds-dev.nurogames.com (seaclouds-dev.nurogames.com)|87.79.6.131|:80... connected.
+HTTP request sent, awaiting response... 401 Authorization Required
+Reusing existing connection to seaclouds-dev.nurogames.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 10192 (10.0K) [application/x-gzip]
+Saving to: Ã¢ÂÂnurogames-seaclouds-casestudy-php.tgzÃ¢ÂÂ
+     0K .........                                             100%  102K=0.1s
+2015-10-30 14:46:22 (102 KB/s) - Ã¢ÂÂnurogames-seaclouds-casestudy-php.tgzÃ¢ÂÂ saved [10192/10192]
+mkdir: cannot create directory Ã¢ÂÂ/var/www/htmlÃ¢ÂÂ: File exists
+
+2015-10-30 15:46:22,529 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-166]: STDOUT of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=iFNkFeuK}:zJ3NICKp]:
+... rve-cgi-bin.
+Enabling site 000-default.
+ * Starting web server apache2
+ *
+Setting up apache2-utils (2.4.7-1ubuntu4.8) ...
+Setting up ssl-cert (1.0.33) ...
+Setting up unzip (6.0-9ubuntu1.4) ...
+Setting up php5-common (5.5.9+dfsg-1ubuntu4.14) ...
+Setting up php5-mysql (5.5.9+dfsg-1ubuntu4.14) ...
+Setting up php5-cli (5.5.9+dfsg-1ubuntu4.14) ...
+update-alternatives: using /usr/bin/php5 to provide /usr/bin/php (php) in auto mode
+Setting up php5-readline (5.5.9+dfsg-1ubuntu4.14) ...
+Setting up php5-json (1.3.2-2build1) ...
+Processing triggers for ureadahead (0.100.0-16) ...
+Processing triggers for ufw (0.34~rc-0ubuntu2) ...
+Setting up libapache2-mod-php5 (5.5.9+dfsg-1ubuntu4.14) ...
+Module mpm_event disabled.
+Enabling module mpm_prefork.
+ * Restarting web server apache2
+   ...done.
+ * Restarting web server apache2
+   ...done.
+Setting up php5 (5.5.9+dfsg-1ubuntu4.14) ...
+Processing triggers for libc-bin (2.19-0ubuntu6.6) ...
+Executed /tmp/brooklyn-20151030-154554099-ofSp-launching_VanillaSoftwareProce.sh, result 1
+
+2015-10-30 15:46:22,529 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-166]: STDIN of problem in Task[ssh: launching VanillaSoftwareProcessImpl{id=iFNkFeuK}:zJ3NICKp]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/HtjIZ7XZ/entities/VanillaSoftwareProcess_iFNkFeuK"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+sudo apt-get update
+sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+sudo mkdir /var/www/html
+sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+sudo chmod -R 777 /var/www/html/nuro-casestudy
+cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+sudo service apache2 restart
+
+2015-10-30 15:46:22,532 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-W8Aj6uIn-136]: Error invoking start at VanillaSoftwareProcessImpl{id=iFNkFeuK}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invalid result 1 for launching VanillaSoftwareProcessImpl{id=iFNkFeuK}
+2015-10-30 15:46:22,538 WARN  o.a.b.c.m.i.EffectorUtils [brooklyn-execmanager-W8Aj6uIn-143]: Error invoking start at VanillaSoftwareProcessImpl{id=kyGNPLVw}: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalArgumentException: Error resolving config install.latch, $brooklyn:entity("php").attributeWhenReady("service.isUp"), in org.apache.brooklyn.util.core.task.BasicExecutionContext@6e136311([Wrapped[contextEntity:VanillaSoftwareProcessImpl{id=kyGNPLVw}]]): org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: org.apache.brooklyn.util.exceptions.CompoundRuntimeException: Aborted waiting for ready from VanillaSoftwareProcessImpl{id=iFNkFeuK} Sensor: service.isUp (java.lang.Boolean): Aborted waiting for ready from VanillaSoftwareProcessImpl{id=iFNkFeuK} Sensor: service.isUp (java.lang.Boolean): java.lang.Exception: Abort due to VanillaSoftwareProcessImpl{id=iFNkFeuK} -> Sensor: service.state (org.apache.brooklyn.core.entity.lifecycle.Lifecycle)
+2015-10-30 15:47:17,056 INFO  o.a.b.c.e.AbstractApplication [brooklyn-execmanager-W8Aj6uIn-139]: Started application BasicApplicationImpl{id=HtjIZ7XZ}
+2015-10-30 15:53:59,623 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-W8Aj6uIn-179]: Read of MySqlNodeImpl{id=Vhs7IqwD}->Sensor: service.process.isRunning (java.lang.Boolean) gave failure: org.apache.brooklyn.feed.ssh.SshPollValue@79dfa28e
+2015-10-30 15:53:59,624 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-W8Aj6uIn-179]: Setting MySqlNodeImpl{id=Vhs7IqwD} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-30 15:53:59,625 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-W8Aj6uIn-178]: Setting BasicApplicationImpl{id=HtjIZ7XZ} on-fire due to problems when expected running, up=true, problems: {service-lifecycle-indicators-from-children-and-members=Required entity not healthy: MySqlNodeImpl{id=Vhs7IqwD}}
+2015-10-30 15:54:12,346 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-178]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=msWB8DPy}: (ubuntu@52.31.55.98:22) failed to connect: (ubuntu@52.31.55.98:22) (ubuntu@52.31.55.98:22) error acquiring {hostAndPort=52.31.55.98:22, user=ubuntu, ssh=98246604, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out (throwing)
+2015-10-30 15:54:12,346 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-178]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=msWB8DPy}:vnKEaa8l]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/HtjIZ7XZ/entities/VanillaSoftwareProcess_msWB8DPy"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+true
+2015-10-30 15:54:12,348 WARN  o.a.b.c.f.AttributePollHandler [brooklyn-execmanager-W8Aj6uIn-179]: Read of VanillaSoftwareProcessImpl{id=msWB8DPy}->Sensor: service.process.isRunning (java.lang.Boolean) gave exception: org.apache.brooklyn.util.exceptions.PropagatedRuntimeException: java.lang.IllegalStateException: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=msWB8DPy}: (ubuntu@52.31.55.98:22) failed to connect: (ubuntu@52.31.55.98:22) (ubuntu@52.31.55.98:22) error acquiring {hostAndPort=52.31.55.98:22, user=ubuntu, ssh=98246604, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=msWB8DPy}: (ubuntu@52.31.55.98:22) failed to connect: (ubuntu@52.31.55.98:22) (ubuntu@52.31.55.98:22) error acquiring {hostAndPort=52.31.55.98:22, user=ubuntu, ssh=98246604, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out: org.apache.brooklyn.util.core.internal.ssh.SshException: (ubuntu@52.31.55.98:22) failed to connect: (ubuntu@52.31.55.98:22) (ubuntu@52.31.55.98:22) error acquiring {hostAndPort=52.31.55.98:22, user=ubuntu, ssh=98246604, password=null, privateKeyFile=/home/micheleguerriero/seaclouds.pem, privateKey=null, connectTimeout=10000, sessionTimeout=30000} (attempt 1/1, in time 10.01s/2m); out of retries: connect timed out
+2015-10-30 15:54:12,350 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-W8Aj6uIn-138]: Setting VanillaSoftwareProcessImpl{id=msWB8DPy} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-30 15:54:27,363 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-138]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=msWB8DPy}: java.lang.InterruptedException (throwing)
+2015-10-30 15:54:27,363 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-138]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=msWB8DPy}:Q8JXiNmq]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/HtjIZ7XZ/entities/VanillaSoftwareProcess_msWB8DPy"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+true
+2015-10-30 15:58:59,070 INFO  o.a.b.r.r.ApplicationResource [brooklyn-jetty-server-8081-qtp807830727-24]: Launched from YAML: name: Nuro case study on the Cloud
+location:
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.31.1.222
+    - 52.30.247.159
+
+services:
+
+- serviceType: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess
+  name: DC+PHP
+  id: dc+php
+  brooklyn.config:
+    launch.command: "true"
+    stop.command: "true"
+    checkRunning.command: "true"
+    children.startable.mode: background_late
+  brooklyn.children:
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: PHP
+    id: php
+    provisioning.properties:
+      stopIptables: true
+
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get -y install apache2 apache2-utils php5 php5-mysql libaio1 unzip 
+      wget -O nurogames-seaclouds-casestudy-php.tgz "http://${USER}:${PASSWORD}@seaclouds-dev.nurogames.com/nuro-casestudy/versions/${VERSION}"
+      sudo tar --directory=/var/www/html -xzf nurogames-seaclouds-casestudy-php.tgz
+      sudo chmod -R 777 /var/www/html/nuro-casestudy
+      cp '/var/www/html/nuro-casestudy/config/config_template.php' '/var/www/html/nuro-casestudy/config/config.php'
+      sed -i "s/%host%/$HOST/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%database%/$DB_NAME/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%user%/$DB_USER/" /var/www/html/nuro-casestudy/config/config.php
+      sed -i "s/%password%/$DB_PASSWORD/" /var/www/html/nuro-casestudy/config/config.php
+      sudo service apache2 restart
+
+    checkRunning.command: |
+      sudo service apache2 status
+
+    stop.command: |
+      sudo service apache2 stop
+
+    env:
+      USER: seaclouds
+      PASSWORD: preview
+      VERSION: D6.3.2/nurogames-seaclouds-casestudy-php-D6.3.2v0.1_20150921_1543CET.tgz
+      HOST: $brooklyn:component("db").attributeWhenReady("host.name")
+      DB_NAME: "database1"
+      DB_USER: "brooklyn"
+      DB_PASSWORD: "br00k11n"
+
+  - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
+    name: DC
+    id: dc
+    launch.command: |
+      sudo apt-get update
+      sudo apt-get install -y openjdk-7-jre
+      wget -O nuro-data-collector.jar https://www.dropbox.com/s/db6o4f4k5cgv16y/nuro-data-collector-0.8.0-SNAPSHOT-jar-with-dependencies.jar
+      wget -O config.properties https://www.dropbox.com/s/pp22gk2g8o5gzte/config.properties
+      nohup java -jar nuro-data-collector.jar ./config.properties > nuroDc.log 2>&1 &
+      echo $! > $PID_FILE
+
+    install.latch: $brooklyn:component("php").attributeWhenReady("service.isUp")
+
+- serviceType: org.apache.brooklyn.entity.database.mysql.MySqlNode
+  id: db
+  name: Nuro DB
+  brooklyn.config:
+    datastore.creation.script.url: ./create.sql -> BasicApplicationImpl{id=RrsP8rMh} (Task[start:ykoPIlxO])
+2015-10-30 15:58:59,089 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-205]: Starting VanillaSoftwareProcessImpl{id=Y9cN44sP}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=VX5J6OHX, name=FixedListMachineProvisioningLocation:VX5J} with ports [22]
+2015-10-30 15:58:59,093 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-203]: Starting MySqlNodeImpl{id=OqLacrjt}, obtaining a new location instance in FixedListMachineProvisioningLocation{id=VX5J6OHX, name=FixedListMachineProvisioningLocation:VX5J} with ports [22, 3306]
+2015-10-30 15:58:59,095 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-201]: Starting VanillaSoftwareProcessImpl{id=Y9cN44sP} on machine SshMachineLocation[SshMachineLocation:leiu:52.31.1.222/52.31.1.222:22@leiuyZso]
+2015-10-30 15:58:59,097 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-210]: Starting MySqlNodeImpl{id=OqLacrjt} on machine SshMachineLocation[SshMachineLocation:bU1g:52.30.247.159/52.30.247.159:22@bU1g47Vd]
+2015-10-30 15:59:09,603 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-218]: Starting VanillaSoftwareProcessImpl{id=AHcRzwEB} on machine SshMachineLocation[SshMachineLocation:leiu:52.31.1.222/52.31.1.222:22@leiuyZso]
+2015-10-30 15:59:09,603 INFO  o.a.b.e.s.b.l.MachineLifecycleEffectorTasks [brooklyn-execmanager-W8Aj6uIn-216]: Starting VanillaSoftwareProcessImpl{id=D9TeVO6E} on machine SshMachineLocation[SshMachineLocation:leiu:52.31.1.222/52.31.1.222:22@leiuyZso]
+2015-10-30 16:00:27,335 INFO  o.a.b.c.e.AbstractApplication [brooklyn-execmanager-W8Aj6uIn-200]: Started application BasicApplicationImpl{id=RrsP8rMh}
+2015-10-30 16:02:21,885 WARN  o.a.b.c.e.l.ServiceStateLogic [brooklyn-execmanager-W8Aj6uIn-219]: Setting VanillaSoftwareProcessImpl{id=Y9cN44sP} on-fire due to problems when expected running, up=false, not-up-indicators: {service.process.isRunning=The software process for this entity does not appear to be running}
+2015-10-30 16:02:21,897 WARN  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-239]: Execution failed, invocation error for check-running VanillaSoftwareProcessImpl{id=Y9cN44sP}: (ubuntu@52.31.1.222:22) (ubuntu@52.31.1.222:22) error acquiring Put(path=[/tmp/brooklyn-20151030-160221426-bu64-check-running_VanillaSoftwareP.sh 284]) (attempt 1/1, in time 458ms/2m); out of retries: null (throwing)
+2015-10-30 16:02:21,897 INFO  o.a.b.e.s.b.l.ScriptHelper [brooklyn-execmanager-W8Aj6uIn-239]: STDIN of problem in Task[ssh: check-running VanillaSoftwareProcessImpl{id=Y9cN44sP}:Zs4k1xhb]:
+export RUN_DIR="/home/ubuntu/brooklyn-managed-processes/apps/RrsP8rMh/entities/VanillaSoftwareProcess_Y9cN44sP"
+mkdir -p $RUN_DIR
+cd $RUN_DIR
+true

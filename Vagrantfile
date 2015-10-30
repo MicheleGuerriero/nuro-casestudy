@@ -6,7 +6,7 @@ VAGRANTFILE_API_VERSION = "2" # Vagrantfile version
 
 # Setting this variable equal to 2 will instantiate a second Vagrant machine on host 192.168.100.13, in the case of local deployment on two host
 # Keeping the current value start a single machine on host 192.168.100.12, for the case of local deployment on a single host 
-NODE_COUNT = 1 
+NODE_COUNT = 2
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Setup VirtualBox VMs

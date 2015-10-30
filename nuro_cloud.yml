@@ -1,9 +1,11 @@
 name: Nuro case study on the Cloud byon
 location:
-  jclouds:aws-ec2:
-    identity:     <REPLACE>
-    credential:   <REPLACE>
-    region:       eu-west-1
+  byon:
+    user: ubuntu
+    privateKeyFile: ~/seaclouds.pem
+    hosts:
+    - 52.31.4.23
+    - 52.31.24.117
 services:
 
 - serviceType: brooklyn.entity.basic.VanillaSoftwareProcess
